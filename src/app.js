@@ -5,6 +5,7 @@ const form = document.querySelector('#application-form');
 const filter = document.querySelector('#filter');
 const list = document.querySelector('#application-list');
 const names = { html: 'HTML и CSS', javascript: 'JavaScript и DOM', api: 'HTTP и API' };
+const submitButton = document.querySelector('#submit-button');
 let applications = [];
 let selectedId = null;
 let revision = 0;
@@ -119,6 +120,7 @@ form.addEventListener('submit', async event => {
   const currentRevision = revision;
   setFormStatus('Отправляем заявку…', 'pending');
   form.setAttribute('aria-busy', 'true');
+  if (submitButton) submitButton.disabled = true;
   try {
     const response = await createApplication({ ...values, name: values.name.trim() });
     const result = await response.json();
@@ -130,6 +132,7 @@ form.addEventListener('submit', async event => {
     if (currentRevision === revision) setFormStatus(error.message || 'Не удалось отправить заявку.', 'error');
   } finally {
     if (currentRevision === revision) form.setAttribute('aria-busy', 'false');
+    if (submitButton) submitButton.disabled = false;
   }
 });
 
