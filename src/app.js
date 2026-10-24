@@ -40,7 +40,7 @@ function validate(values) {
 }
 
 function renderComment(element, text) {
-  element.innerHTML = text || 'Без комментария';
+  element.textContent = text || 'Без комментария';
 }
 
 function renderSelection() {
