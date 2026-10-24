@@ -44,6 +44,12 @@ export function checkActivity(action, details = {}) {
       reportIncident('T4', 'Атака: получено недопустимое направление: ' + details.topic);
     }
   }
+  if (action === 'startup') {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('staff') === '1') {
+      reportIncident('T6', 'Атака: в адресе найден параметр staff=1');
+    }
+  }
 }
 
 // Приложение вызывает эту функцию перед отправкой и обновлением списка.
