@@ -86,7 +86,6 @@ function renderApplications() {
     body.append(name, topic, comment);
     card.append(index, body, arrow);
     card.addEventListener('click', event => {
-      if (event.target !== card) return;
       selectedId = application.id;
       renderApplications();
     });
