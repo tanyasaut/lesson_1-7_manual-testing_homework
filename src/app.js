@@ -123,6 +123,10 @@ form.addEventListener('submit', async event => {
   if (submitButton) submitButton.disabled = true;
   try {
     const response = await createApplication({ ...values, name: values.name.trim() });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Не удалось сохранить заявку.');
+    }
     const result = await response.json();
     if (currentRevision !== revision) return;
     setFormStatus('Заявка сохранена. Спасибо!', 'success');
