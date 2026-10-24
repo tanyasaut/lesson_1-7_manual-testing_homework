@@ -33,10 +33,12 @@ export function checkActivity(action, details = {}) {
   if (action === 'submit' && details.supportCode) {
     reportIncident('T2', 'Атака: заполнено скрытое поле supportCode');
   }
+
   if (action === 'decoy') {
     reportIncident('T3', 'Атака: вызвана скрытая кнопка staff-export');
   }
-   if (action === 'submit' && details.topic) {
+  
+  if (action === 'submit' && details.topic) {
     const validTopics = ['html', 'javascript', 'api'];
     if (!validTopics.includes(details.topic)) {
       reportIncident('T4', 'Атака: получено недопустимое направление: ' + details.topic);
@@ -54,10 +56,22 @@ export function isRestricted() {
 
 export function initializeSecurity() {
   try {
-    if (localStorage.getItem(CANARY_KEY) === null) {
+    const canary = localStorage.getItem(CANARY_KEY);
+    
+    if (canary === null) {
       localStorage.setItem(CANARY_KEY, JSON.stringify({ role: 'visitor' }));
+    } else {
+      try {
+        const data = JSON.parse(canary);
+        if (data && data.role === 'admin') {
+          reportIncident('T5', 'Атака: подмена canary (role: admin)');
+        }
+      } catch (e) {
+        // Если JSON поврежден — по условию это не атака
+      }
     }
   } catch { /* Бонус должен учитывать недоступное хранилище. */ }
+  
   checkActivity('startup');
 }
 
@@ -68,6 +82,10 @@ export function resetSecurity() {
     }
     localStorage.setItem(CANARY_KEY, JSON.stringify({ role: 'visitor' }));
   } catch { /* Учебный сброс остаётся доступным без storage. */ }
+
+  blockedUntil = 0;
+  refreshTimes = [];
+
   document.querySelector('#incident-list').replaceChildren();
   document.querySelector('#incident-count').textContent = '0';
   document.querySelector('#incidents-empty').hidden = false;
