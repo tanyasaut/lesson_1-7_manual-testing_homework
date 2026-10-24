@@ -13,11 +13,30 @@ export function reportIncident(type, reason) {
 }
 
 // События: startup, refresh, submit, decoy. Условия ловушек добавьте здесь.
+let refreshTimes = [];
+let blockedUntil = 0;
+
 export function checkActivity(action, details = {}) {
+  const now = Date.now();
+
+  if (action === 'refresh') {
+    refreshTimes = refreshTimes.filter(time => now - time < 5000);
+    
+    refreshTimes.push(now);
+
+    if (refreshTimes.length >= 6) {
+      reportIncident('T1', 'Подозрительная активность: слишком частые запросы обновления');
+      refreshTimes = []; 
+      blockedUntil = Date.now() + 30000;
+    }
+  }
 }
 
 // Приложение вызывает эту функцию перед отправкой и обновлением списка.
 export function isRestricted() {
+  if (Date.now() < blockedUntil) {
+    return true;
+  }
   return false;
 }
 
