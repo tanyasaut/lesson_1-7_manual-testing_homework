@@ -30,6 +30,12 @@ export function checkActivity(action, details = {}) {
       blockedUntil = Date.now() + 30000;
     }
   }
+  if (action === 'submit' && details.supportCode) {
+    reportIncident('T2', 'Атака: заполнено скрытое поле supportCode');
+  }
+  if (action === 'decoy') {
+    reportIncident('T3', 'Атака: вызвана скрытая кнопка staff-export');
+  }
 }
 
 // Приложение вызывает эту функцию перед отправкой и обновлением списка.
