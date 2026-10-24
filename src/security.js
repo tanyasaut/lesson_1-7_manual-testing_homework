@@ -36,6 +36,12 @@ export function checkActivity(action, details = {}) {
   if (action === 'decoy') {
     reportIncident('T3', 'Атака: вызвана скрытая кнопка staff-export');
   }
+   if (action === 'submit' && details.topic) {
+    const validTopics = ['html', 'javascript', 'api'];
+    if (!validTopics.includes(details.topic)) {
+      reportIncident('T4', 'Атака: получено недопустимое направление: ' + details.topic);
+    }
+  }
 }
 
 // Приложение вызывает эту функцию перед отправкой и обновлением списка.
