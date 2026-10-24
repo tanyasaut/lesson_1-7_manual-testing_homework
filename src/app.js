@@ -5,6 +5,7 @@ const form = document.querySelector('#application-form');
 const filter = document.querySelector('#filter');
 const list = document.querySelector('#application-list');
 const names = { html: 'HTML и CSS', javascript: 'JavaScript и DOM', api: 'HTTP и API' };
+const submitButton = document.querySelector('#submit-button');
 let applications = [];
 let selectedId = null;
 let revision = 0;
@@ -22,14 +23,24 @@ function permitted(action, details = {}) {
 }
 
 function validate(values) {
-  if (values.name.length < 2 || values.name.length > 60) return 'Имя должно содержать от 2 до 60 символов.';
-  if (!Object.hasOwn(names, values.topic)) return 'Выберите направление из списка.';
-  if (values.comment.length > 200) return 'Комментарий должен быть не длиннее 200 символов.';
+  const name = values.name.trim()
+  if (name.length < 2 || name.length > 60) {
+    return 'Имя должно содержать от 2 до 60 символов.';
+  }
+
+  if (!Object.hasOwn(names, values.topic)) {
+    return 'Выберите направление из списка.';
+  }
+
+  if (values.comment.length > 200) {
+    return 'Комментарий должен быть не длиннее 200 символов.';
+  }
+
   return '';
 }
 
 function renderComment(element, text) {
-  element.innerHTML = text || 'Без комментария';
+  element.textContent = text || 'Без комментария';
 }
 
 function renderSelection() {
@@ -46,8 +57,7 @@ function renderApplications() {
   const visible = applications.filter(item => filter.value === 'all' || item.topic === filter.value);
   const focusedId = document.activeElement?.closest('.application-card')?.dataset.id;
   list.replaceChildren();
-  document.querySelector('#application-count').textContent = String(applications.length);
-  document.querySelector('#empty-state').hidden = visible.length > 0;
+  document.querySelector('#application-count').textContent = String(visible.length);  document.querySelector('#empty-state').hidden = visible.length > 0;
 
   for (const application of visible) {
     const card = document.createElement('button');
@@ -77,7 +87,6 @@ function renderApplications() {
     body.append(name, topic, comment);
     card.append(index, body, arrow);
     card.addEventListener('click', event => {
-      if (event.target !== card) return;
       selectedId = application.id;
       renderApplications();
     });
@@ -111,8 +120,13 @@ form.addEventListener('submit', async event => {
   const currentRevision = revision;
   setFormStatus('Отправляем заявку…', 'pending');
   form.setAttribute('aria-busy', 'true');
+  if (submitButton) submitButton.disabled = true;
   try {
     const response = await createApplication({ ...values, name: values.name.trim() });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Не удалось сохранить заявку.');
+    }
     const result = await response.json();
     if (currentRevision !== revision) return;
     setFormStatus('Заявка сохранена. Спасибо!', 'success');
@@ -122,6 +136,7 @@ form.addEventListener('submit', async event => {
     if (currentRevision === revision) setFormStatus(error.message || 'Не удалось отправить заявку.', 'error');
   } finally {
     if (currentRevision === revision) form.setAttribute('aria-busy', 'false');
+    if (submitButton) submitButton.disabled = false;
   }
 });
 
@@ -137,6 +152,9 @@ document.querySelector('#refresh-button').addEventListener('click', () => {
 
 document.querySelector('#reset-interface').addEventListener('click', () => {
   form.reset();
+  form.setAttribute('aria-busy', 'false');
+  selectedId = null;
+  filter.value = 'all';
   setFormStatus('Интерфейс сброшен.');
   renderApplications();
 });
