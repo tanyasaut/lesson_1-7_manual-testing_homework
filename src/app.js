@@ -22,9 +22,19 @@ function permitted(action, details = {}) {
 }
 
 function validate(values) {
-  if (values.name.length < 2 || values.name.length > 60) return 'Имя должно содержать от 2 до 60 символов.';
-  if (!Object.hasOwn(names, values.topic)) return 'Выберите направление из списка.';
-  if (values.comment.length > 200) return 'Комментарий должен быть не длиннее 200 символов.';
+  const name = values.name.trim()
+  if (name.length < 2 || name.length > 60) {
+    return 'Имя должно содержать от 2 до 60 символов.';
+  }
+
+  if (!Object.hasOwn(names, values.topic)) {
+    return 'Выберите направление из списка.';
+  }
+
+  if (values.comment.length > 200) {
+    return 'Комментарий должен быть не длиннее 200 символов.';
+  }
+
   return '';
 }
 
